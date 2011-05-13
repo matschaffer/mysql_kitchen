@@ -19,8 +19,8 @@ echo "Slave IP: $SLAVE"
 #       resolution fix.
 alias cook=~/code/littlechef/cook
 
-cook node:$MASTER deploy_chef:ask=no
-cook node:$SLAVE deploy_chef:ask=no
+cook node:$MASTER deploy_chef:gems=yes,ask=no
+cook node:$SLAVE deploy_chef:gems=yes,ask=no
 cook node:$MASTER role:mysql_master
 cook node:$SLAVE role:mysql_slave
 
