@@ -7,7 +7,7 @@ bridge() {
 }
 
 start() {
-  VBoxManage startvm "$1" #--type headless
+  VBoxManage startvm "$1" --type headless
 }
 
 ip_info() {
