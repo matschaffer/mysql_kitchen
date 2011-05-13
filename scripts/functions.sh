@@ -1,4 +1,13 @@
-#!/bin/sh
+IMG="$HOME/Desktop/Not Backed Up/OS/VBox Images/Ubuntu64Base.ova"
+
+import() {
+  VBoxManage import "$IMG" --vsys 0 --vmname "$1"
+  VBoxManage modifyvm "$1" --macaddress1 auto
+}
+
+destroy() {
+  VBoxManage unregistervm "$1" --delete
+}
 
 bridge() {
   local NIC=$(echo $(VBoxManage list bridgedifs | grep -m1 Name | awk '{ $1=""; print $0 }'))
@@ -21,9 +30,9 @@ get_ip() {
   ip_info "$1" | cut -d' ' -f2
 }
 
-bridge MySQLMaster
-bridge MySQLSlave
-start MySQLMaster
-start MySQLSlave
-echo "Master IP:" `get_ip MySQLMaster`
-echo "Slave IP:" `get_ip MySQLSlave`
+stop() {
+  VBoxManage controlvm "$1" acpipowerbutton
+  while VBoxManage list runningvms | grep "$1" > /dev/null 2>&1; do
+    sleep 1
+  done
+}
