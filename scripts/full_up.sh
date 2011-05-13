@@ -15,6 +15,8 @@ SLAVE=`get_ip MySQLSlave`
 echo "Master IP: $MASTER"
 echo "Slave IP: $SLAVE"
 
+# TODO: Remove this once littlechef releases apt-get update and node file
+#       resolution fix.
 alias cook=~/code/littlechef/cook
 
 cook node:$MASTER deploy_chef:ask=no
