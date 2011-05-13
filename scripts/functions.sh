@@ -35,4 +35,5 @@ stop() {
   while VBoxManage list runningvms | grep "$1" > /dev/null 2>&1; do
     sleep 1
   done
+  sleep 1
 }
