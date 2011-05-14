@@ -2,5 +2,6 @@ CHANGE MASTER TO
   MASTER_HOST='<%= node.mysql.master.host %>',
   MASTER_USER='<%= node.mysql.master.user %>',
   MASTER_PASSWORD='<%= node.mysql.master.password %>',
-  MASTER_LOG_FILE='<%= node.mysql.master.host %>',
-  MASTER_LOG_POS=<%= 1 %>;
+  MASTER_LOG_FILE='<%= node.mysql.master.log_file %>',
+  MASTER_LOG_POS=<%= node.mysql.master.log_pos %>;
+START SLAVE;
