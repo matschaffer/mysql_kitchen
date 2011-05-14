@@ -62,13 +62,18 @@ desc 'Stops the replica set'
 task :stop do
   hosts.each do |type, host|
     host[:vm] = VirtualBox::VM.find(host[:name])
-    host[:vm].start(:headless)
+    host[:vm].shutdown
   end
 end
 
 desc 'Destroys the replica set VMs'
 task :destroy => :stop do
   hosts.each do |type, host|
+    while host[:vm].running?
+      sleep 1
+      host[:vm].reload
+    end
+    sleep 1
     host[:vm].destroy(:destroy_medium => true)
   end
 end
