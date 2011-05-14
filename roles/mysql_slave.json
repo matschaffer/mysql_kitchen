@@ -4,11 +4,17 @@
   "json_class": "Chef::Role",
   "description": "The MySQL slave",
   "run_list": [
-    "recipe[mysql::server]"
+    "recipe[mysql::server]", "recipe[mysql::slave]"
   ],
   "override_attributes": {
     "mysql": {
-      "server_root_password": "291hsashdy912i"
+      "server_id": 2,
+      "server_root_password": "291hsashdy912i",
+      "master": {
+        "host": "10.0.0.18",
+        "user": "repl",
+        "password": "wd0udoih289d"
+      }
     }
   }
 }

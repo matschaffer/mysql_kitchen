@@ -8,6 +8,8 @@
   ],
   "override_attributes": {
     "mysql": {
+      "server_id": 1,
+      "server_repl_password": "wd0udoih289d",
       "server_root_password": "0112jhaslflh2"
     }
   }
