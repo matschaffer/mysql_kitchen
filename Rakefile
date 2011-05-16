@@ -2,6 +2,7 @@ require 'bundler'
 Bundler.require
 
 image = "#{ENV['HOME']}/Desktop/Not Backed Up/OS/VBox Images/Ubuntu64Base.ova"
+cook = "#{ENV['HOME']}/code/littlechef/cook"
 hosts = {
   :master => {
     :name => "MySQLMaster"
@@ -50,11 +51,21 @@ task :start => :bridge do
   end
 end
 
+class VirtualBox::VM
+  def get_ip_address
+    interface.get_guest_property_value("/VirtualBox/GuestInfo/Net/0/V4/IP")
+  end
+
+  def ip_address
+    sleep 1 while get_ip_address.empty?
+    get_ip_address
+  end
+end
+
 desc 'Prepares the VMs for chef'
 task :prepare => :start do
   hosts.each do |type, host|
-    host[:ip] = host[:vm].interface.get_guest_property_value("/VirtualBox/GuestInfo/Net/0/V4/IP")
-    p host[:ip]
+    sh cook, "node:#{host[:vm].ip_address}", "deploy_chef:gems=yes,ask=no"
   end
 end
 
@@ -73,7 +84,7 @@ task :destroy => :stop do
       sleep 1
       host[:vm].reload
     end
-    sleep 1
+    sleep 1 # One more sleep incase it's not _really_ stopped
     host[:vm].destroy(:destroy_medium => true)
   end
 end
