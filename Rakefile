@@ -86,7 +86,7 @@ task :cook => :start do
     }
   })
 
-  sh cook, "node:#{hosts[:master][:vm].ip_address}", "role:mysql_master"
+  sh cook, "node:#{hosts[:master][:vm].ip_address}"
 
   # Need to connect and get log file/log pos info here
   write_node(:slave, {
@@ -104,7 +104,7 @@ task :cook => :start do
     }
   })
 
-  sh cook, "node:#{hosts[:master][:vm].ip_address}", "role:mysql_slave"
+  sh cook, "node:#{hosts[:master][:vm].ip_address}"
 end
 
 desc 'Stops the replica set'
