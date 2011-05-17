@@ -73,7 +73,7 @@ desc 'Stops the replica set'
 task :stop do
   hosts.each do |type, host|
     host[:vm] = VirtualBox::VM.find(host[:name])
-    host[:vm].shutdown
+    host[:vm].shutdown if host[:vm].running?
   end
 end
 
