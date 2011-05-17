@@ -69,6 +69,44 @@ task :prepare => :start do
   end
 end
 
+def write_node(type, config)
+  File.open("nodes/#{hosts[type][:vm].ip_address}.json", "w") do |f|
+    f.print config.to_json
+  end
+end
+
+desc 'Builds the replica set'
+task :cook => :start do
+  write_node(:master, {
+    :run_list => [ "role[mysql_master]" ],
+    :mysql => {
+      :server_id => 1,
+      :server_repl_password => "wd0udoih289d",
+      :server_root_password => "0112jhaslflh2"
+    }
+  })
+
+  sh cook, "node:#{hosts[:master][:vm].ip_address}", "role:mysql_master"
+
+  # Need to connect and get log file/log pos info here
+  write_node(:slave, {
+    :run_list => [ "role[mysql_slave]" ],
+    :mysql => {
+      :server_id => 2,
+      :server_root_password => "291hsashdy912i",
+      :master => {
+        :host => hosts[:master][:vm].ip_address,
+        :user => "repl",
+        :password => "wd0udoih289d",
+        :log_file => "mysql-bin.000001",
+        :log_pos => 37169
+      }
+    }
+  })
+
+  sh cook, "node:#{hosts[:master][:vm].ip_address}", "role:mysql_slave"
+end
+
 desc 'Stops the replica set'
 task :stop do
   hosts.each do |type, host|
