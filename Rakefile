@@ -51,6 +51,12 @@ task :start => :bridge do
   end
 end
 
+desc 'Get info for replica set'
+task :info => :start do
+  puts "Master: #{hosts[:master][:vm].ip_address}"
+  puts "Slave:  #{hosts[:slave][:vm].ip_address}"
+end
+
 class VirtualBox::VM
   def get_ip_address
     interface.get_guest_property_value("/VirtualBox/GuestInfo/Net/0/V4/IP")
