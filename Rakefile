@@ -1,6 +1,7 @@
 require 'bundler'
 Bundler.require
 
+run_mode = :normal # :headless
 image = "#{ENV['HOME']}/Desktop/Not Backed Up/OS/VBox Images/Ubuntu64Base.ova"
 cook = "#{ENV['HOME']}/code/littlechef/cook"
 hosts = {
@@ -13,10 +14,10 @@ hosts = {
 }
 
 desc 'Runs all the ops to bring up the replica set'
-task :up => [:import, :bridge, :start, :prep, :cook]
+task :up => [:prep, :cook]
 
 desc 'Destroys the replica set'
-task :down => [:stop, :destroy]
+task :down => :destroy
 
 desc 'Imports the replica set VMs'
 task :import do
@@ -27,7 +28,7 @@ task :import do
     end
     puts "Importing #{host[:name]}: 100%"
     host[:vm].name = host[:name]
-    host[:vm].network_adapters[0].mac_address = nil
+    host[:vm].network_adapters.each { |a| a.mac_address = nil }
     host[:vm].save
   end
 end
@@ -38,8 +39,11 @@ task :bridge => :import do
   default = `VBoxManage list bridgedifs`.match(/^Name:\s+(.*)$/)[1]
   hosts.each do |type, host|
     next if host[:vm].running?
-    host[:vm].network_adapters[0].host_interface = default
-    host[:vm].network_adapters[0].attachment_type = :bridged
+    host[:vm].network_adapters.each do |adapter|
+      if adapter.attachment_type == :bridged
+        adapter.host_interface = default
+      end
+    end
     host[:vm].save
   end
 end
@@ -47,19 +51,35 @@ end
 desc 'Starts the replica set'
 task :start => :bridge do
   hosts.each do |type, host|
-    host[:vm].start(:headless)
+    host[:vm].start(run_mode)
   end
 end
 
 desc 'Get info for replica set'
 task :info => :start do
-  puts "Master: #{hosts[:master][:vm].ip_address}"
-  puts "Slave:  #{hosts[:slave][:vm].ip_address}"
+  hosts.each do |type, host|
+    puts "#{type.capitalize}: #{host[:vm].ip_address}"
+  end
 end
 
 class VirtualBox::VM
+  def find_first_interface(type)
+    network_adapters.detect { |a| a.attachment_type == type }
+  end
+
+  def find_usable_interface
+    host_only = find_first_interface(:host_only)
+    return host_only.slot if host_only
+
+    bridged = find_first_interface(:bridged)
+    return bridged.slot if bridged
+
+    raise "VM does not have any Host-only or bridged interfaces"
+  end
+
   def get_ip_address
-    interface.get_guest_property_value("/VirtualBox/GuestInfo/Net/0/V4/IP")
+    slot = find_usable_interface
+    interface.get_guest_property_value("/VirtualBox/GuestInfo/Net/#{slot}/V4/IP")
   end
 
   def ip_address
