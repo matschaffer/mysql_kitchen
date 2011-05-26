@@ -1,6 +1,7 @@
 require 'bundler'
 Bundler.require
 
+run_mode = :gui
 image = "#{ENV['HOME']}/Desktop/Not Backed Up/OS/VBox Images/Ubuntu64Base.ova"
 cook = "#{ENV['HOME']}/code/littlechef/cook"
 hosts = {
@@ -50,7 +51,7 @@ end
 desc 'Starts the replica set'
 task :start => :bridge do
   hosts.each do |type, host|
-    host[:vm].start
+    host[:vm].start(run_mode)
   end
 end
 
