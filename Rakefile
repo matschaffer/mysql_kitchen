@@ -95,15 +95,15 @@ task :prepare => :start do
   end
 end
 
-def write_node(type, config)
-  File.open("nodes/#{hosts[type][:vm].ip_address}.json", "w") do |f|
-    f.print config.to_json
+def write_node(host, config)
+  File.open("nodes/#{host[:vm].ip_address}.json", "w") do |f|
+    f.print JSON.pretty_generate(config)
   end
 end
 
 desc 'Builds the replica set'
 task :cook => :start do
-  write_node(:master, {
+  write_node(hosts[:master], {
     :run_list => [ "role[mysql_master]" ],
     :mysql => {
       :server_id => 1,
@@ -112,7 +112,7 @@ task :cook => :start do
     }
   })
 
-  sh cook, "node:#{hosts[:master][:vm].ip_address}"
+  sh cook, "node:#{hosts[:master][:vm].ip_address}", "configure"
 
   # Need to connect and get log file/log pos info here
   write_node(:slave, {
@@ -130,7 +130,7 @@ task :cook => :start do
     }
   })
 
-  sh cook, "node:#{hosts[:master][:vm].ip_address}"
+  sh cook, "node:#{hosts[:slave][:vm].ip_address}", "configure"
 end
 
 desc 'Stops the replica set'
